@@ -1,0 +1,94 @@
+-- 1.
+
+SELECT COUNT(claim_id)
+FROM PortfolioProject..food_claims
+
+
+--2. To find missing values
+
+SELECT time_to_close
+FROM PortfolioProject..food_claims
+WHERE time_to_close IS NULL;
+
+
+--3. Round to 2 decimals, Replace missing values with the overall median amount paid.
+SELECT claim_amount
+FROM PortfolioProject..food_claims;
+
+SELECT claim_amount
+FROM PortfolioProject..food_claims
+WHERE claim_amount IS NULL;
+
+
+
+--4. Nulls replaced with the median of the column
+WITH MedianCTE AS (
+  SELECT
+    (
+      SELECT TOP 1 amount_paid
+      FROM (
+        SELECT TOP 50 PERCENT amount_paid
+FROM PortfolioProject..food_claims
+        WHERE amount_paid != '0'  -- Exclude '0' values
+        ORDER BY CAST(amount_paid AS numeric)
+      ) AS lower_half
+      ORDER BY CAST(amount_paid AS numeric) DESC
+    ) AS median_value
+)
+SELECT 
+  CASE 
+    WHEN amount_paid = '0' THEN
+      (SELECT median_value FROM MedianCTE)
+    ELSE amount_paid
+  END AS amount_paidFIX
+FROM PortfolioProject..food_claims;
+
+--5.
+SELECT location
+FROM PortfolioProject..food_claims
+WHERE location IN ('RECIFE', 'SAO LUIS', 'FORTALEZA', 'NATAL');
+
+--6.
+
+SELECT individuals_on_claim
+FROM PortfolioProject..food_claims
+WHERE individuals_on_claim > 0
+
+
+SELECT *
+FROM PortfolioProject..food_claims
+WHERE individuals_on_claim IS NULL;
+
+--7.
+
+
+SELECT COALESCE(linked_cases, 'false') AS updated_linked_cases
+FROM PortfolioProject..food_claims;
+
+
+
+--8. Replace missing values with unknown
+
+SELECT cause
+FROM PortfolioProject..food_claims
+WHERE cause IN ('vegetable', 'meat', 'unknow')
+
+SELECT
+  CASE
+    WHEN cause IN ('vegetable', 'meat', 'unknow') THEN cause
+    ELSE 'unknow'
+  END AS new_cause
+FROM PortfolioProject..food_claims;
+
+
+
+
+
+
+
+
+
+
+
+
+
